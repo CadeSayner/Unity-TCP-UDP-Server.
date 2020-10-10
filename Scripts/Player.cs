@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
     public int id;
     public string username;
 
+    public float maximum_Velocity = 10f;
     public float MovementSpeed = 5f;
     public Rigidbody rb;
     public float stoppingVelocity = 0.1f;
@@ -42,18 +43,27 @@ public class Player : MonoBehaviour
     }
 
     /// <summary>Processes player input and moves the player.</summary>
-    public void FixedUpdate()
+    public void Update()
     {
+        // Get input
         verticalInput = inputs[0];
         horizontalInput = inputs[1];
         counterInput = inputs[2];
 
+        // Add forces based on input.
         Move();
+
+        // Simulate physics.
+        Physics.Simulate(Time.fixedDeltaTime);
+
+        // Send snapshot back to all clients.
+        ServerSend.PlayerPosition(this);
+        ServerSend.PlayerRotation(this);
     }
 
     /// <summary>Calculates the player's desired movement direction and moves him.</summary>
     private void Move()
-    {   
+    {
         float Boost = 1 + lowVelBoost();
         rb.AddForce(head.transform.forward * verticalInput * moveSpeed * Boost, ForceMode.Impulse);
 
@@ -63,25 +73,21 @@ public class Player : MonoBehaviour
         {
             rb.AddForce(-rb.velocity * counterInput * counterConstant, ForceMode.Impulse);
         }
-        
-        ServerSend.PlayerPosition(this);
-        ServerSend.PlayerRotation(this);
     }
-
 
     private float lowVelBoost()
     {
-        if(rb.velocity.sqrMagnitude < maxBoostThreshold && rb.velocity.sqrMagnitude > minBoostThreshold)
+        if (rb.velocity.sqrMagnitude < maxBoostThreshold && rb.velocity.sqrMagnitude > minBoostThreshold)
         {
             return calcBoost(rb.velocity.sqrMagnitude);
 
             // TODO:
-            // Boosting animation vvould be accessed here...
+            // Boosting animation would be accessed here...
         }
 
         else
         {
-            return 0; 
+            return 0;
         }
     }
 
