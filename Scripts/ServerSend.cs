@@ -122,7 +122,7 @@ public class ServerSend
     {
         using (Packet _packet = new Packet((int)ServerPackets.playerRotation))
         {
-            // Sent every frame the player moves. The server gets the info anout the rotation from the client 
+            // Sent every frame the player moves. The server gets the info about the rotation from the client 
             // Sets the transform of the representative on the server and then finally sends it back to all the clients
             // except the client itself
             _packet.Write(_player.id);
@@ -131,5 +131,18 @@ public class ServerSend
             SendUDPDataToAll(_player.id, _packet);
         }
     }
+
+    public static void PlayerAnimation(Player _player)
+    {  
+        using (Packet _packet = new Packet((int)ServerPackets.playerAnimation))
+        {
+            // Sent back to all the clients, besides the client with the animation state in question.
+            _packet.Write(_player.id);
+            _packet.Write((int)_player.AnimationState);
+            SendUDPDataToAll(_player.id, _packet);
+        }
+    }
+
+
     #endregion
 }

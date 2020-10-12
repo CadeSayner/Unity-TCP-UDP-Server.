@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+public enum animationState {idle, forward}
 public class Player : MonoBehaviour
-{
+{   
+    public animationState AnimationState;
     public GameObject head;
     public GameObject model;
 
@@ -12,6 +15,8 @@ public class Player : MonoBehaviour
 
     public float maximum_Velocity = 10f;
     public float MovementSpeed = 5f;
+    public float maxGrappleToDistance = 35f;
+    public float GrappleSpeed = 5f;
     public Rigidbody rb;
     public float stoppingVelocity = 0.1f;
     public float counterConstant = 0.5f;
@@ -25,7 +30,6 @@ public class Player : MonoBehaviour
     private int verticalInput;
     private int horizontalInput;
     private int counterInput;
-
 
     private void Start()
     {
@@ -59,11 +63,12 @@ public class Player : MonoBehaviour
         // Send snapshot back to all clients.
         ServerSend.PlayerPosition(this);
         ServerSend.PlayerRotation(this);
+        ServerSend.PlayerAnimation(this);
     }
 
     /// <summary>Calculates the player's desired movement direction and moves him.</summary>
     private void Move()
-    {
+    {   
         float Boost = 1 + lowVelBoost();
         rb.AddForce(head.transform.forward * verticalInput * moveSpeed * Boost, ForceMode.Impulse);
 
@@ -97,7 +102,7 @@ public class Player : MonoBehaviour
         float c = 2.002f;
 
         float boostMagnitude = m * rb.velocity.sqrMagnitude + c;
-        Debug.Log(boostMagnitude.ToString());
+        // Debug.Log(boostMagnitude.ToString());
 
         return boostMagnitude;
     }
@@ -107,11 +112,15 @@ public class Player : MonoBehaviour
     /// <param name="_rotation">The new rotation.</param>
 
     // After fetching the correct player from the server side players dictionary, the players SetInput() is called.
-    public void SetInput(int[] _inputs, Quaternion head_rotation, Quaternion model_rotation)
+    public void SetInput(int[] _inputs, Quaternion head_rotation, Quaternion model_rotation, animationState animState)
     {
         inputs = _inputs;
 
         head.transform.rotation = head_rotation;
         model.transform.rotation = model_rotation;
+
+        // Set the player instance animation state to what it is on the client - side.
+        AnimationState = animState;
     }
+
 }

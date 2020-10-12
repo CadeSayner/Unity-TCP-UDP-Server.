@@ -19,14 +19,18 @@ public class ServerHandle
 
     public static void PlayerMovement(int _fromClient, Packet _packet)
     {
+        // Debug.Log("Moving player");
+
         int[] _inputs = new int[_packet.ReadInt()];
         for (int i = 0; i < _inputs.Length; i++)
         {
             _inputs[i] = _packet.ReadInt();
         }
+
         Quaternion head_rotation = _packet.ReadQuaternion();
         Quaternion model_rotation = _packet.ReadQuaternion();
 
-        Server.clients[_fromClient].player.SetInput(_inputs, head_rotation, model_rotation);
+        animationState animState = (animationState)_packet.ReadInt();
+        Server.clients[_fromClient].player.SetInput(_inputs, head_rotation, model_rotation, animState);
     }
 }
